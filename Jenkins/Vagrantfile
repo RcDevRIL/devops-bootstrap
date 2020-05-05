@@ -1,0 +1,24 @@
+$script = <<-'SCRIPT'
+sudo apt-get remove docker docker-engine docker.io containerd runc
+sudo apt-get update
+sudo apt-get install -y apt-transport-https ca-certificates curl gnupg-agent software-properties-common
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+sudo apt-get update
+sudo apt-get install  -y docker-ce docker-ce-cli containerd.io
+sudo adduser vagrant docker
+SCRIPT
+
+
+Vagrant.configure(2) do |config|
+  config.vm.box = "ubuntu/bionic64"
+
+  config.vm.provider "virtualbox" do |v|
+    v.memory = 2048
+    v.cpus = 2
+    v.customize ["modifyvm", :id, "--uartmode1", "disconnected"]
+  end
+
+  config.vm.network "forwarded_port", guest: 8080, host: 8080
+  config.vm.provision "shell", inline: $script
+end
